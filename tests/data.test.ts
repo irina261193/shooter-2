@@ -1,0 +1,9 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {grid,crosswordWords,path,missions,rounds,checkQuestion,award,spelling,story,readings} from '../src/data.ts';
+test('exact 22-cell crossword with consistent intersections and 7×10 bounds',()=>{const g=grid();assert.equal(Object.keys(g).length,22);assert.equal(g['2,6'],'E');assert.equal(g['5,6'],'H');assert.equal(g['7,6'],'R');assert.equal(Math.max(...Object.keys(g).map(k=>+k.split(',')[0])),7);assert.equal(Math.max(...Object.keys(g).map(k=>+k.split(',')[1])),10);crosswordWords.forEach(w=>assert.equal(path(w).map(k=>g[k]).join(''),w.answer));});
+test('continuous 60-minute plan includes eight minutes of free production',()=>{assert.equal(missions[0].start,0);missions.slice(1).forEach((m,i)=>assert.equal(m.start,missions[i].end));assert.equal(missions.at(-1)?.end,60);assert.equal(missions.reduce((n,m)=>n+m.end-m.start,0),60);assert.equal(missions.find(m=>m.phase==='Production')?.end,57);});
+test('eight rounds have exactly one correct target',()=>{assert.equal(rounds.length,8);rounds.forEach(r=>assert.equal(r.options.filter(o=>o===r.answer).length,1));});
+test('question order and punctuation',()=>{assert.equal(checkQuestion('  WHERE  is he from? ','Where is he from?'),'correct');assert.equal(checkQuestion('Where is he from','Where is he from?'),'punctuation');assert.equal(checkQuestion('Is where he from?','Where is he from?'),'retry');});
+test('repeated success never duplicates energy',()=>{let done=award([],'mission-3');done=award(done,'mission-3');assert.deepEqual(done,['mission-3']);});
+test('all source groups, complete story and non-profession spellings retained',()=>{assert.equal(readings.length,4);assert.ok(readings[1].text.includes('No, he isn’t a worker. He is a pilot.'));assert.ok(story.includes('They want to be drivers.'));assert.ok(spelling.includes('but'));assert.ok(spelling.includes('her'));});
